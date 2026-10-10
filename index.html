@@ -1,1 +1,1191 @@
-<!DOCTYPE html><html><head><meta name=viewport content="width=device-width,initial-scale=1"><title>NV TOURNAMENT</title><style>body{background:#05040a;color:#fff;font-family:Arial;text-align:center;padding:15px} .box{background:#111;border:2px solid #facc15;border-radius:15px;padding:20px;margin-top:20px} h1{color:#facc15} .btn{background:#facc15;color:#000;padding:15px;border:none;border-radius:10px;width:100%;font-weight:900;font-size:18px;margin-top:15px}</style></head><body><h1>NV TOURNAMENT</h1><div class=box><h2>ROOM ID: 5856</h2><h3 style=color:#22c55e>PASS: 12345</h3><p>Free Fire MAX - 8 PM</p><button class=btn>JOIN NOW</button></div></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#06b6d4">
+<meta name="description" content="NV Esports - Free Fire tournaments, match registration, prizes and player profiles.">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<title>NV - Esports</title>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<style>
+:root{
+  --bg:#02050b;--panel:#07111d;--panel2:#091827;--line:#168dff;
+  --cyan:#00c8ff;--blue:#087cff;--ice:#a9edff;--gold:#8fdcff;
+  --text:#effaff;--muted:#82a4bd;--danger:#ff4265;--ok:#36ffb1;
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,Helvetica,sans-serif}
+html,body{min-height:100%;background:#02050b;color:var(--text)}
+body{
+  padding-bottom:78px;overflow-x:hidden;
+  background:
+    radial-gradient(circle at 50% -5%,#063f75 0,#02050b 35%),
+    linear-gradient(135deg,#02050b,#06101d 50%,#02050b);
+}
+button,input{font:inherit}
+button{cursor:pointer}
+button:disabled{opacity:.45;cursor:not-allowed}
+.hidden{display:none!important}
+
+/* Diamond premium frame */
+.screen{min-height:calc(100vh - 78px);padding:8px 7px 18px;position:relative}
+.screen:before,.screen:after{
+  content:"";position:fixed;pointer-events:none;z-index:0;opacity:.45
+}
+.screen:before{
+  width:170px;height:170px;right:-75px;top:70px;
+  border:1px solid #078fff55;transform:rotate(45deg);
+  box-shadow:0 0 40px #008cff18,inset 0 0 25px #008cff12
+}
+.screen:after{
+  width:130px;height:130px;left:-75px;bottom:100px;
+  border:1px solid #00d9ff44;transform:rotate(45deg);
+}
+.content{position:relative;z-index:1;max-width:620px;margin:auto}
+
+.card{
+  position:relative;overflow:hidden;
+  background:linear-gradient(145deg,#0b1725eF,#030811F5 70%);
+  border:1px solid #168dff75;border-radius:14px;
+  padding:10px;margin:6px 0;
+  box-shadow:0 0 18px #007bff16,inset 0 0 20px #00bfff08;
+}
+.card:before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:
+    linear-gradient(135deg,transparent 0 45%,#0b82ff0c 46% 47%,transparent 48%),
+    linear-gradient(315deg,transparent 0 58%,#00d9ff09 59% 60%,transparent 61%);
+}
+.glow{border-color:#18b8ff;box-shadow:0 0 18px #009dff30,inset 0 0 22px #00c8ff08}
+.diamond{
+  width:42px;height:42px;display:inline-flex;align-items:center;justify-content:center;
+  transform:rotate(45deg);border:1px solid #5ce4ff;
+  background:linear-gradient(135deg,#05233e,#0aa7e8 55%,#062a4a);
+  box-shadow:0 0 22px #00aaff66;border-radius:5px;margin:8px;
+}
+.diamond span{transform:rotate(-45deg);font-size:21px}
+.logoTitle{
+  font-size:28px;letter-spacing:1px;font-weight:1000;
+  background:linear-gradient(#fff,#79dfff 45%,#0a8fff);
+  -webkit-background-clip:text;color:transparent;
+  text-shadow:0 0 20px #00aaff44
+}
+.sub{font-size:10px;letter-spacing:3px;color:#62dfff;font-weight:900}
+.muted{font-size:10px;color:var(--muted)}
+.title{font-size:15px;font-weight:1000}
+.cyan{color:#66ddff}.gold{color:#b5efff}.green{color:var(--ok)}.red{color:var(--danger)}
+.badge{
+  display:inline-block;padding:3px 7px;border-radius:20px;font-size:8px;
+  font-weight:1000;background:#008cff;color:#fff;box-shadow:0 0 10px #008cff55
+}
+.badge.live{background:#00b9ff}.badge.up{background:#315dff}.badge.done{background:#586878}
+.badge.free{background:#08bd91}
+.btn{
+  border:0;width:100%;padding:11px;border-radius:10px;margin-top:6px;
+  color:#00111b;font-weight:1000;
+  background:linear-gradient(90deg,#00aaff,#5eeaff,#008cff);
+  box-shadow:0 0 15px #009dff35
+}
+.btn2{
+  width:100%;padding:10px;border-radius:10px;margin-top:6px;
+  background:#02070e;border:1px solid #198cff80;color:#8de9ff;font-weight:900
+}
+.btnDanger{border-color:#ff426577;color:#ff718b;background:#17060c}
+.input{
+  width:100%;padding:11px;border-radius:9px;margin:4px 0;
+  color:#fff;background:#02070e;border:1px solid #187fff55;outline:none
+}
+.input:focus{border-color:#35d9ff;box-shadow:0 0 10px #00bfff22}
+.row{display:flex;gap:6px;align-items:center}
+.row>*{flex:1}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.iconBtn{border:1px solid #198cff66;background:#061321;color:#8feaff;border-radius:9px;padding:8px}
+.hr{height:1px;background:#159cff22;margin:8px 0}
+.empty{padding:25px;text-align:center;color:#7695aa;font-size:11px}
+
+/* splash/login */
+.authWrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:12px}
+.authCard{width:100%;max-width:440px;text-align:center;padding:18px 14px}
+.heroLogo{
+  min-height:300px;border-radius:18px;padding:22px 12px;display:flex;flex-direction:column;
+  justify-content:center;align-items:center;position:relative;overflow:hidden;
+  background:
+    radial-gradient(circle at 50% 38%,#087dca55,transparent 28%),
+    linear-gradient(135deg,#020913,#071d34 45%,#02060d);
+  border:1px solid #18a8ff;
+  box-shadow:0 0 30px #008cff2a,inset 0 0 45px #00bfff0d
+}
+.heroLogo:before,.heroLogo:after{
+  content:"";position:absolute;width:150px;height:150px;border:1px solid #17a8ff55;transform:rotate(45deg)
+}
+.heroLogo:before{left:-90px;top:-40px}.heroLogo:after{right:-90px;bottom:-40px}
+.heroPlayer{
+  margin-top:20px;width:170px;height:95px;opacity:.85;
+  background:radial-gradient(ellipse at 50% 70%,#00bfff44,transparent 65%);
+  clip-path:polygon(50% 0,61% 24%,88% 32%,72% 55%,82% 100%,50% 78%,18% 100%,28% 55%,12% 32%,39% 24%);
+  border:1px solid #00cfff
+}
+.authFeatures{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin:12px 0}
+.authFeature{font-size:8px;color:#9ad7eb;padding:8px;border:1px solid #168dff33;border-radius:8px;background:#06101a}
+
+/* top bar / banner */
+.topbar{
+  position:sticky;top:0;z-index:20;background:#02060cee;backdrop-filter:blur(12px);
+  border-bottom:1px solid #168dff44;padding:9px 8px;display:flex;justify-content:space-between;align-items:center
+}
+.brand{font-size:16px;font-weight:1000;color:#b9f2ff}
+.balance{background:linear-gradient(90deg,#087cff,#00d8ff);color:#00101a;border-radius:20px;padding:5px 10px;font-size:10px;font-weight:1000}
+.notice{
+  margin:6px 0;padding:6px;text-align:center;font-size:9px;font-weight:1000;
+  color:#00101a;background:linear-gradient(90deg,#00a8ff,#6eefff,#00a8ff);
+  border-radius:7px;box-shadow:0 0 15px #00bfff25
+}
+.banner{
+  min-height:116px;border-radius:15px;margin:6px 0;padding:15px;
+  display:flex;align-items:center;justify-content:space-between;overflow:hidden;
+  background:
+    radial-gradient(circle at 75% 50%,#008fff66,transparent 28%),
+    linear-gradient(135deg,#06101e,#063c65 48%,#03101d);
+  border:1px solid #1db7ff;box-shadow:0 0 25px #008cff20
+}
+.banner .big{font-size:24px;font-weight:1000}
+.banner .small{font-size:9px;color:#9deaff;letter-spacing:2px}
+.weapon{font-size:48px;filter:drop-shadow(0 0 12px #00bfff)}
+
+.sectionHead{display:flex;justify-content:space-between;align-items:center;margin:10px 2px 5px}
+.sectionHead b{font-size:12px}.sectionHead span{font-size:9px;color:#57dfff}
+
+/* tournament cards */
+.tourCard{padding:8px}
+.tourTop{display:flex;justify-content:space-between;gap:7px;align-items:center}
+.tourIcon{
+  width:48px;height:48px;flex:none;border:1px solid #1ab8ff;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:25px;
+  background:linear-gradient(145deg,#0b3656,#02101d);box-shadow:inset 0 0 18px #00aaff18
+}
+.tourInfo{flex:1}.tourInfo b{font-size:12px}.tourInfo p{font-size:9px;color:#78dfff;margin-top:3px}
+.statline{display:flex;gap:5px;margin-top:7px}
+.stat{flex:1;background:#020912;border:1px solid #167fff38;border-radius:8px;padding:6px;text-align:center}
+.stat small{display:block;color:#6e95aa;font-size:7px}.stat b{font-size:10px}
+.pillTabs{display:flex;gap:5px;overflow:auto;margin:7px 0}
+.pill{
+  flex:1;min-width:75px;padding:8px 5px;text-align:center;border-radius:20px;
+  border:1px solid #167fff55;background:#030913;color:#86a8bb;font-size:9px
+}
+.pill.active{color:#00121b;background:linear-gradient(90deg,#00aaff,#52eaff);font-weight:1000}
+
+/* detail */
+.detailHero{
+  border:1px solid #18b8ff;border-radius:14px;overflow:hidden;
+  background:linear-gradient(135deg,#062440,#020810)
+}
+.detailArt{height:130px;display:flex;align-items:center;justify-content:center;font-size:70px;
+  background:radial-gradient(circle,#0b8edc55,transparent 55%),linear-gradient(135deg,#051a2d,#03101c)}
+.detailBody{padding:10px}
+.infoGrid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.infoBox{background:#020912;border:1px solid #1585ff3b;border-radius:9px;padding:8px}
+.infoBox small{font-size:7px;color:#7292a7}.infoBox b{display:block;margin-top:2px;font-size:12px}
+
+/* room */
+.roomBox{margin-top:7px;padding:10px;text-align:center;border:1px dashed #16baff;border-radius:10px;background:#00aaff0a}
+.roomBox b{font-size:15px;letter-spacing:1px}
+
+/* wallet */
+.walletTotal{padding:15px;background:linear-gradient(135deg,#062e50,#03101d);border-color:#13b5ff}
+.walletAmount{font-size:28px;font-weight:1000;color:#d8faff}
+.qrbox{background:#fff;border-radius:12px;padding:10px;text-align:center;color:#000}
+.qrbox img{width:170px;height:170px;max-width:100%}
+.amountBtns{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:5px 0}
+.amountBtns button{padding:8px;background:#02070e;border:1px solid #198cff66;color:#83e8ff;border-radius:8px}
+
+/* profile */
+.avatar{
+  width:65px;height:65px;margin:auto;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  color:#00111a;font-size:26px;font-weight:1000;background:linear-gradient(135deg,#5beaff,#087cff);
+  box-shadow:0 0 25px #00aaff66;border:2px solid #a6f5ff
+}
+.menuItem{display:flex;justify-content:space-between;align-items:center;padding:12px 5px;border-bottom:1px solid #ffffff0d;font-size:10px}
+.menuItem span:last-child{color:#168fff;font-size:15px}
+
+/* bottom nav */
+.bottom{
+  position:fixed;z-index:100;left:0;right:0;bottom:0;height:70px;padding:6px 7px 8px;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:5px;
+  background:#02060df2;backdrop-filter:blur(15px);border-top:1px solid #159dff55
+}
+.navItem{border:1px solid transparent;border-radius:10px;background:transparent;color:#66849a;font-size:8px}
+.navItem .ni{display:block;font-size:17px;margin-bottom:2px}.navItem.active{color:#65e5ff;border-color:#168dff66;background:#00aaff0a;text-shadow:0 0 8px #00bfff}
+
+#toast{
+  position:fixed;z-index:9999;left:50%;top:15px;transform:translateX(-50%);
+  max-width:92%;padding:11px 14px;border-radius:10px;background:#061523;border:1px solid #16b9ff;
+  color:#dffaff;font-size:10px;font-weight:900;box-shadow:0 0 25px #00aaff44;display:none
+}
+@media(min-width:700px){
+  .screen{padding-left:18px;padding-right:18px}.content{max-width:760px}
+  .tourList{display:grid;grid-template-columns:1fr 1fr;gap:5px}.tourList .card{margin:0}
+}
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<!-- LOGIN -->
+<section id="loginPage" class="authWrap">
+  <div class="authCard card glow">
+    <div class="heroLogo">
+      <div class="diamond"><span>💎</span></div>
+      <div class="logoTitle">NV - Esports</div>
+      <div class="sub">PREMIUM ESPORTS</div>
+      <div class="heroPlayer"></div>
+      <div style="font-size:9px;letter-spacing:4px;color:#b7dff0;margin-top:12px">PLAY • COMPETE • WIN</div>
+    </div>
+    <div class="authFeatures">
+      <div class="authFeature">🛡️ SECURE</div>
+      <div class="authFeature">🏆 FAIR PLAY</div>
+      <div class="authFeature">⚡ FAST SUPPORT</div>
+    </div>
+    <button id="googleLoginBtn" type="button" class="btn" onclick="googleLogin()">🔵 GOOGLE LOGIN</button>
+    <button type="button" class="btn2" style="width:100%;margin-top:7px" onclick="installNVApp()">📲 INSTALL NV ESPORTS APP</button>
+    <p class="muted" style="margin-top:8px">Firebase Secured • NV - Esports</p>
+  </div>
+</section>
+
+<!-- PROFILE SETUP -->
+<section id="setupPage" class="screen hidden">
+  <div class="content">
+    <div class="card glow" style="text-align:center">
+      <div class="diamond"><span>💎</span></div>
+      <h2 class="logoTitle" style="font-size:24px">SETUP PROFILE</h2>
+      <p class="muted">Complete your tournament profile</p>
+      <div style="margin-top:12px">
+        <input id="pU" class="input" placeholder="Username *">
+        <input id="pF" class="input" placeholder="Full Name *">
+        <input id="pI" class="input" placeholder="Free Fire UID *">
+        <input id="pG" class="input" placeholder="IGN *">
+        <input id="pM" class="input" placeholder="Mobile *">
+        <button class="btn" onclick="saveProfile()">SAVE & CONTINUE</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MAIN APP -->
+<div id="mainApp" class="hidden">
+  <header class="topbar">
+    <div class="brand">💎 NV <span class="muted">Esports</span></div>
+    <div class="row" style="flex:none">
+      <span id="headerBalance" class="balance">Rs0</span>
+      <button class="iconBtn" onclick="installNVApp()" title="Install app">📲</button>
+      <button class="iconBtn" onclick="showPage('notifications')">🔔</button>
+    </div>
+  </header>
+
+  <div class="content">
+    <div id="noticeBar" class="notice">💎 NV - ESPORTS — WELCOME</div>
+
+    <!-- HOME -->
+    <section id="homePage" class="screen">
+      <div class="content">
+        <div class="banner">
+          <div>
+            <div class="small">PREMIUM ESPORTS</div>
+            <div class="big">WIN RS 8000</div>
+            <div class="muted">REAL PLAYERS • REAL TOURNAMENTS</div>
+          </div>
+          <div class="weapon">💎</div>
+        </div>
+
+        <div class="sectionHead"><b>⚡ Quick Access</b><span>NV ESPORTS</span></div>
+        <div class="grid3">
+          <button class="card glow" onclick="showPage('tournaments')" style="color:#fff">🏆<br><small>TOURNAMENTS</small></button>
+          <button class="card glow" onclick="showPage('wallet')" style="color:#fff">💰<br><small>WALLET</small></button>
+          <button class="card glow" onclick="showPage('leaderboard')" style="color:#fff">📊<br><small>LEADERBOARD</small></button>
+        </div>
+
+        <div class="sectionHead"><b>🔥 Live Tournaments</b><span onclick="showPage('tournaments')">View All ›</span></div>
+        <div id="homeTours" class="tourList"></div>
+
+        <div class="sectionHead"><b>📢 Latest Announcement</b></div>
+        <div id="homeAnnouncement" class="card glow"></div>
+      </div>
+    </section>
+
+    <!-- TOURNAMENTS -->
+    <section id="tournamentsPage" class="screen hidden">
+      <div class="content">
+        <div class="sectionHead"><b class="logoTitle" style="font-size:20px">TOURNAMENTS</b></div>
+        <div class="pillTabs">
+          <button id="tabLive" class="pill active" onclick="filterTours('Live')">Live</button>
+          <button id="tabUpcoming" class="pill" onclick="filterTours('Upcoming')">Upcoming</button>
+          <button id="tabCompleted" class="pill" onclick="filterTours('Completed')">Completed</button>
+          <button id="tabAll" class="pill" onclick="filterTours('All')">All</button>
+        </div>
+        <div id="tourList" class="tourList"></div>
+      </div>
+    </section>
+
+    <!-- DETAIL -->
+    <section id="detailPage" class="screen hidden">
+      <div class="content">
+        <button class="btn2" onclick="showPage('tournaments')">← Back</button>
+        <div id="detailContent"></div>
+      </div>
+    </section>
+
+    <!-- MY JOINED -->
+    <section id="joinedPage" class="screen hidden">
+      <div class="content">
+        <div class="card glow"><b class="logoTitle" style="font-size:19px">🎮 MY JOINED MATCHES</b></div>
+        <div id="joinedList"></div>
+        <button class="btn2" onclick="showPage('profile')">Back</button>
+      </div>
+    </section>
+
+    <!-- RESULTS -->
+    <section id="resultsPage" class="screen hidden">
+      <div class="content">
+        <div class="card glow"><b class="logoTitle" style="font-size:19px">🏆 RESULTS</b></div>
+        <div id="resultsList"></div>
+        <button class="btn2" onclick="showPage('profile')">Back</button>
+      </div>
+    </section>
+
+    <!-- LEADERBOARD -->
+    <section id="leaderboardPage" class="screen hidden">
+      <div class="content">
+        <div class="card glow"><b class="logoTitle" style="font-size:19px">📊 LEADERBOARD</b></div>
+        <div class="pillTabs">
+          <button class="pill active">Solo</button><button class="pill">Squad</button><button class="pill">CS</button>
+        </div>
+        <div id="leaderboardList"></div>
+        <button class="btn2" onclick="showPage('profile')">Back</button>
+      </div>
+    </section>
+
+    <!-- NOTIFICATIONS -->
+    <section id="notificationsPage" class="screen hidden">
+      <div class="content">
+        <div class="card glow"><b class="logoTitle" style="font-size:19px">🔔 NOTIFICATIONS LIVE</b></div>
+        <div id="notificationList"></div>
+        <button class="btn2" onclick="showPage('home')">Back</button>
+      </div>
+    </section>
+
+    <!-- WALLET -->
+    <section id="walletPage" class="screen hidden">
+      <div class="content">
+        <div class="card walletTotal glow">
+          <span class="muted">TOTAL BALANCE</span>
+          <div id="walletBalance" class="walletAmount">Rs0</div>
+          <span class="muted">Available tournament balance</span>
+        </div>
+
+        <div class="card glow">
+          <b class="title cyan">💎 DEPOSIT</b>
+          <p class="muted">Scan QR or pay using UPI</p>
+          <div class="qrbox" style="margin-top:7px">
+            <img id="qrImg" alt="UPI QR">
+            <p id="upiText" style="font-weight:1000;margin-top:5px">fggeft@ibl</p>
+            <button class="btn2" onclick="copyUPI()">📋 COPY UPI</button>
+          </div>
+          <div class="amountBtns">
+            <button onclick="setAmount(50)">50</button><button onclick="setAmount(100)">100</button>
+            <button onclick="setAmount(200)">200</button><button onclick="setAmount(500)">500</button>
+          </div>
+          <div class="grid2">
+            <input id="depositAmount" class="input" placeholder="Amount">
+            <input id="depositUTR" class="input" placeholder="UTR Number">
+          </div>
+          <button class="btn" onclick="depositRequest()">ADD MONEY</button>
+        </div>
+
+        <div class="card glow">
+          <b class="title cyan">💸 WITHDRAW</b>
+          <input id="withdrawAmount" class="input" placeholder="Minimum 100">
+          <input id="withdrawUPI" class="input" placeholder="UPI ID">
+          <button class="btn" onclick="withdrawRequest()">WITHDRAW</button>
+        </div>
+
+        <div class="card glow">
+          <div class="sectionHead"><b>📜 HISTORY</b><span>Transactions</span></div>
+          <div id="walletHistory"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROFILE -->
+    <section id="profilePage" class="screen hidden">
+      <div class="content">
+        <div class="card glow" style="text-align:center">
+          <div id="avatar" class="avatar">N</div>
+          <h3 id="profileName" style="margin-top:7px">User</h3>
+          <p id="profileData" class="muted"></p>
+          <div id="profileBalance" class="logoTitle" style="font-size:21px;margin-top:5px">Rs0</div>
+          <button class="btn2" onclick="showPage('editProfile')">✏️ EDIT PROFILE</button>
+        </div>
+
+        <div class="card" style="padding:4px 10px">
+          <div class="menuItem" onclick="showPage('joined')">🎮 My Joined <span>›</span></div>
+          <div class="menuItem" onclick="showPage('results')">🏆 My Results <span>›</span></div>
+          <div class="menuItem" onclick="showPage('leaderboard')">📊 Leaderboard <span>›</span></div>
+          <div class="menuItem" onclick="showPage('notifications')">🔔 Notifications <span>›</span></div>
+          <div class="menuItem" onclick="showPage('wallet')">💰 Wallet <span>›</span></div>
+          <div class="menuItem" onclick="showPage('support')">💬 Support <span>›</span></div>
+          <div class="menuItem" onclick="showPage('terms')">📜 Terms <span>›</span></div>
+          <div class="menuItem" onclick="showPage('privacy')">🔒 Privacy <span>›</span></div>
+          <div class="menuItem" onclick="showPage('help')">❓ Help <span>›</span></div>
+          <div class="menuItem red" onclick="logout()">⎋ Logout <span>›</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- EDIT -->
+    <section id="editProfilePage" class="screen hidden">
+      <div class="content">
+        <div class="card glow">
+          <b class="logoTitle" style="font-size:20px">✏️ EDIT PROFILE</b>
+          <input id="eF" class="input" placeholder="Name">
+          <input id="eI" class="input" placeholder="UID">
+          <input id="eG" class="input" placeholder="IGN">
+          <input id="eM" class="input" placeholder="Mobile">
+          <button class="btn" onclick="updateProfile()">UPDATE</button>
+          <button class="btn2" onclick="showPage('profile')">Back</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SUPPORT -->
+    <section id="supportPage" class="screen hidden">
+      <div class="content">
+        <div class="card glow"><b class="logoTitle" style="font-size:20px">💬 SUPPORT</b></div>
+        <div class="card">
+          <input id="supportSubject" class="input" placeholder="Subject">
+          <textarea id="supportMessage" class="input" placeholder="Message" style="min-height:100px;resize:vertical"></textarea>
+          <button class="btn" onclick="sendSupport()">SEND TICKET</button>
+        </div>
+        <div id="supportList"></div>
+        <button class="btn2" onclick="showPage('profile')">Back</button>
+      </div>
+    </section>
+
+    <!-- TERMS -->
+    <section id="termsPage" class="screen hidden">
+      <div class="content">
+        <div class="card glow"><b class="logoTitle" style="font-size:20px">📜 TERMS</b></div>
+        <div class="card">
+          <p class="muted" style="line-height:1.7">
+            No hack, no cheating, no abusive behaviour. Fair play is mandatory.
+            Tournament entry, room timing, result and prize rules are controlled by the tournament organiser.
+            Fake UTR, chargeback or fraudulent payment can result in account restriction.
+          </p>
+        </div>
+        <button class="btn2" onclick="showPage('profile')">Back</button>
+      </div>
+    </section>
+
+    <!-- PRIVACY -->
+    <section id="privacyPage" class="screen hidden">
+      <div class="content">
+        <div class="card glow"><b class="logoTitle" style="font-size:20px">🔒 PRIVACY</b></div>
+        <div class="card">
+          <p class="muted" style="line-height:1.7">
+            Profile details are used for tournament participation, support and payment verification.
+            Firebase Authentication is used for Google sign-in. Do not publish private payment or account details.
+          </p>
+        </div>
+        <button class="btn2" onclick="showPage('profile')">Back</button>
+      </div>
+    </section>
+
+    <!-- HELP -->
+    <section id="helpPage" class="screen hidden">
+      <div class="content">
+        <div class="card glow"><b class="logoTitle" style="font-size:20px">❓ HELP</b></div>
+        <div class="card">
+          <p class="muted" style="line-height:1.8">
+            1. Login with Google.<br>
+            2. Complete your profile.<br>
+            3. Open Tournament and Join.<br>
+            4. If payment is required, add money and wait for verification.<br>
+            5. Room & Password are shown shortly before the match.<br>
+            6. Results and leaderboard are available from Profile.
+          </p>
+        </div>
+        <button class="btn2" onclick="showPage('profile')">Back</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav id="bottomNav" class="bottom">
+    <button id="navHome" class="navItem active" onclick="showPage('home')"><span class="ni">⌂</span>HOME</button>
+    <button id="navTour" class="navItem" onclick="showPage('tournaments')"><span class="ni">🏆</span>TOUR</button>
+    <button id="navWallet" class="navItem" onclick="showPage('wallet')"><span class="ni">💰</span>WALLET</button>
+    <button id="navProfile" class="navItem" onclick="showPage('profile')"><span class="ni">♙</span>PROFILE</button>
+  </nav>
+</div>
+
+<script>
+/* =========================
+   FIREBASE CONFIG
+   ========================= */
+const firebaseConfig={
+  apiKey:"AIzaSyDNoiaVfUlC96dhQVb-d7YAckjjcHx0xtE",
+  authDomain:"nv---esports.firebaseapp.com",
+  projectId:"nv---esports"
+};
+
+let auth=null,db=null;
+try{
+  if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  auth=firebase.auth();
+  db=firebase.firestore();
+}catch(e){console.warn("Firebase init:",e)}
+
+const DEFAULT_UPI="fggeft@ibl";
+let UPI=localStorage.getItem("nv_upi")||DEFAULT_UPI;
+let currentUser=null;
+let activeFilter="Live";
+let lastDetailId=null;
+
+/* =========================
+   SAFE STORAGE HELPERS
+   ========================= */
+function getJSON(k,fallback){
+  try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(fallback))}
+  catch(e){return fallback}
+}
+function setJSON(k,v){localStorage.setItem(k,JSON.stringify(v))}
+function toast(msg){
+  const t=document.getElementById("toast");t.textContent=msg;t.style.display="block";
+  clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.style.display="none",2600);
+}
+function esc(v){
+  return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+}
+function uid(){return Date.now()+Math.floor(Math.random()*999)}
+function balanceKey(){return "nv_balance_"+(currentUser?.username||"guest")}
+
+/* Remove only the old built-in demo tournaments from previous local sessions. */
+(function removeOldDemoTours(){
+  const key="nv_tours_final";
+  const old=getJSON(key,[]);
+  if(!Array.isArray(old)||!old.length)return;
+  const demoTitles=new Set(["BR SOLO #103","FREE #20","SQUAD CUP #15","CS RANKED #8"]);
+  const cleaned=old.filter(t=>!(demoTitles.has(t?.title) && [1,2,3,4].includes(Number(t?.id))));
+  if(cleaned.length!==old.length)setJSON(key,cleaned);
+})();
+
+function getTours(){
+  const cloud=getJSON("nv_firestore_tours",null);
+  const t=Array.isArray(cloud)?cloud:getJSON("nv_tours_final",[]);
+  return t.map(x=>{
+    if(x.status==="Live" && new Date(x.time)<new Date(Date.now()-3600000)) x.status="Completed";
+    return x;
+  });
+}
+
+/* =========================
+   FIRESTORE PUBLIC SYNC
+   Admin writes to /tournaments and the public app listens in real time.
+   localStorage remains a fallback so the UI still works if Firestore is offline.
+   ========================= */
+let tournamentsUnsubscribe=null;
+let noticesUnsubscribe=null;
+function startPublicFirestoreSync(){
+  if(!db)return;
+  try{
+    if(tournamentsUnsubscribe)tournamentsUnsubscribe();
+    tournamentsUnsubscribe=db.collection("tournaments").onSnapshot(snap=>{
+      const arr=snap.docs.map(d=>{const x=d.data();return Object.assign({id:d.id},x)});
+      arr.sort((a,b)=>String(a.time||"").localeCompare(String(b.time||"")));
+      if(arr.length){
+        setJSON("nv_firestore_tours",arr);
+        setJSON("nv_tours_final",arr);
+        if(currentUser){
+          try{refreshAll()}catch(e){}
+        }
+      }
+    },err=>console.warn("Tournament sync:",err));
+
+    if(noticesUnsubscribe)noticesUnsubscribe();
+    noticesUnsubscribe=db.collection("notices").orderBy("createdAt","desc").limit(20).onSnapshot(snap=>{
+      const arr=snap.docs.map(d=>Object.assign({id:d.id},d.data()));
+      if(arr.length)setJSON("nv_firestore_notices",arr);
+      if(currentUser){try{renderHome();renderNotifications()}catch(e){}}
+    },err=>console.warn("Notice sync:",err));
+
+    db.collection("settings").doc("public").onSnapshot(snap=>{
+      const d=snap.data()||{};
+      if(d.upi){localStorage.setItem("nv_upi",d.upi);UPI=d.upi;try{updateQR()}catch(e){}}
+    },err=>console.warn("Settings sync:",err));
+  }catch(e){console.warn("Firestore public sync:",e)}
+}
+startPublicFirestoreSync();
+
+/* =========================
+   AUTH — SINGLE, NON-DUPLICATE FLOW
+   ========================= */
+let authBusy=false;
+let lastAuthUid=null;
+
+function buildLocalUser(u){
+  const old=getJSON("nv_current",null);
+  return old&&old.id===u.uid
+    ? Object.assign({},old,{id:u.uid,email:u.email||old.email||"",fullName:old.fullName||u.displayName||"Player"})
+    : {id:u.uid,username:(u.displayName||"player").replace(/\s+/g,"_").toLowerCase(),fullName:u.displayName||"Player",mobile:"",uid:"",ign:u.displayName||"Player",email:u.email||""};
+}
+
+function finishGoogleLogin(u){
+  if(!u) return;
+  const obj=buildLocalUser(u);
+  currentUser=obj;
+  setJSON("nv_current",obj);
+  let users=getJSON("nv_users",[]);
+  users=users.some(x=>x.id===obj.id)?users.map(x=>x.id===obj.id?obj:x):users.concat(obj);
+  setJSON("nv_users",users);
+  localStorage.setItem("nv_balance_"+obj.username,localStorage.getItem("nv_balance_"+obj.username)||"0");
+
+  /* UI must never wait for Firestore. */
+  afterAuth();
+
+  /* Cloud profile sync is best-effort and cannot send the user back to login. */
+  if(db){
+    db.collection("users").doc(u.uid).get().then(function(s){
+      if(s.exists){
+        const cloud=Object.assign({},obj,s.data(),{id:u.uid,email:u.email||obj.email});
+        currentUser=cloud;
+        setJSON("nv_current",cloud);
+        let us=getJSON("nv_users",[]);
+        us=us.some(x=>x.id===cloud.id)?us.map(x=>x.id===cloud.id?cloud:x):us.concat(cloud);
+        setJSON("nv_users",us);
+        afterAuth();
+      }else{
+        return db.collection("users").doc(u.uid).set(Object.assign({},obj,{balance:0,createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()}));
+      }
+    }).catch(function(e){console.warn("User sync skipped:",e);});
+  }
+}
+
+async function googleLogin(){
+  const btn=document.getElementById("googleLoginBtn")||document.querySelector("#loginPage .btn");
+  if(!auth){toast("Firebase load nahi hua. Internet check karke refresh karo.");return;}
+  if(authBusy)return;
+  authBusy=true;
+  if(btn){btn.disabled=true;btn.textContent="OPENING GOOGLE...";}
+  const provider=new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({prompt:"select_account"});
+  try{
+    const result=await auth.signInWithPopup(provider);
+    if(result&&result.user) finishGoogleLogin(result.user);
+  }catch(e){
+    console.error("Google Login Error:",e);
+    const code=e&&e.code||"";
+    if(code==="auth/popup-blocked"||code==="auth/operation-not-supported-in-this-environment"){
+      try{await auth.signInWithRedirect(provider);return;}catch(er){e=er;}
+    }
+    if(code!=="auth/popup-closed-by-user"&&code!=="auth/cancelled-popup-request"){
+      toast("Google Login: "+(e&&e.code?e.code:(e&&e.message)||"failed"));
+    }
+  }finally{
+    authBusy=false;
+    if(btn){btn.disabled=false;btn.textContent="🔵 GOOGLE LOGIN";}
+  }
+}
+
+function afterAuth(){
+  const c=getJSON("nv_current",null);
+  if(!c||!c.id)return;
+  currentUser=c;
+  const login=document.getElementById("loginPage"), setup=document.getElementById("setupPage"), main=document.getElementById("mainApp");
+  if(login)login.classList.add("hidden");
+  if(main)main.classList.add("hidden");
+  if(!c.mobile||!c.uid){
+    if(setup)setup.classList.remove("hidden");
+    ["pU","pF","pI","pG","pM"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+    document.getElementById("pU").value=c.username||"";
+    document.getElementById("pF").value=c.fullName||"";
+    document.getElementById("pI").value=c.uid||"";
+    document.getElementById("pG").value=c.ign||"";
+    document.getElementById("pM").value=c.mobile||"";
+  }else{
+    if(setup)setup.classList.add("hidden");
+    if(main)main.classList.remove("hidden");
+    showPage("home");
+    try{refreshAll();}catch(e){console.warn("refreshAll:",e)}
+  }
+}
+
+if(auth){
+  auth.getRedirectResult().then(function(result){
+    if(result&&result.user){lastAuthUid=result.user.uid;finishGoogleLogin(result.user);}
+  }).catch(function(e){
+    console.error("Redirect Error:",e);
+    if(e&&e.code&&e.code!=="auth/no-auth-event")toast("Google Login: "+e.code);
+  });
+  auth.onAuthStateChanged(function(u){
+    if(u && u.uid!==lastAuthUid){lastAuthUid=u.uid;finishGoogleLogin(u);}
+  });
+}
+
+/* =========================
+   PROFILE
+   ========================= */
+function saveProfile(){
+  const c=getJSON("nv_current",null);if(!c)return;
+  c.username=document.getElementById("pU").value.trim().toLowerCase();
+  c.fullName=document.getElementById("pF").value.trim();
+  c.uid=document.getElementById("pI").value.trim();
+  c.ign=document.getElementById("pG").value.trim();
+  c.mobile=document.getElementById("pM").value.trim();
+  if(!c.username||!c.fullName||!c.uid||!c.ign||!c.mobile){toast("Sabhi * fields bharo.");return}
+  setJSON("nv_current",c);currentUser=c;
+  let users=getJSON("nv_users",[]);
+  users=users.map(x=>x.id===c.id?c:x);
+  setJSON("nv_users",users);
+  localStorage.setItem("nv_balance_"+c.username,localStorage.getItem("nv_balance_"+c.username)||"0");
+  showMain();toast("Profile saved 💎");
+}
+function updateProfile(){
+  if(!currentUser)return;
+  const eF=document.getElementById("eF"),eI=document.getElementById("eI"),eG=document.getElementById("eG"),eM=document.getElementById("eM");
+  if(!eF.value.trim()||!eI.value.trim()||!eG.value.trim()){toast("Name, UID aur IGN bharo.");return}
+  currentUser.fullName=eF.value.trim();currentUser.uid=eI.value.trim();currentUser.ign=eG.value.trim();currentUser.mobile=eM.value.trim();
+  setJSON("nv_current",currentUser);
+  let users=getJSON("nv_users",[]);users=users.map(x=>x.id===currentUser.id?currentUser:x);setJSON("nv_users",users);
+  renderProfile();toast("Profile updated.");
+}
+function renderProfile(){
+  if(!currentUser)return;
+  const b=localStorage.getItem(balanceKey())||"0";
+  document.getElementById("avatar").textContent=(currentUser.username||"N").charAt(0).toUpperCase();
+  document.getElementById("profileName").textContent=currentUser.username||"User";
+  document.getElementById("profileData").textContent=
+    (currentUser.fullName||"")+
+    " | UID:"+((currentUser.uid)||"-")+
+    " | IGN:"+((currentUser.ign)||"-");
+  document.getElementById("profileBalance").textContent="Rs"+b;
+  document.getElementById("eF").value=currentUser.fullName||"";
+  document.getElementById("eI").value=currentUser.uid||"";
+  document.getElementById("eG").value=currentUser.ign||"";
+  document.getElementById("eM").value=currentUser.mobile||"";
+}
+function logout(){
+  localStorage.removeItem("nv_current");currentUser=null;
+  try{if(auth)auth.signOut()}catch(e){}
+  location.reload();
+}
+
+/* =========================
+   NAVIGATION
+   ========================= */
+const pages=["home","tournaments","detail","joined","results","leaderboard","notifications","wallet","profile","editProfile","support","terms","privacy","help"];
+function pageEl(name){return document.getElementById(name+"Page")}
+function showMain(){
+  document.getElementById("setupPage").classList.add("hidden");
+  document.getElementById("mainApp").classList.remove("hidden");
+  showPage("home");
+  refreshAll();
+}
+function showPage(name){
+  pages.forEach(p=>{const el=pageEl(p);if(el)el.classList.add("hidden")});
+  const el=pageEl(name);if(el)el.classList.remove("hidden");
+
+  const navMap={home:"navHome",tournaments:"navTour",wallet:"navWallet",profile:"navProfile"};
+  document.querySelectorAll(".navItem").forEach(x=>x.classList.remove("active"));
+  const n=navMap[name];if(n)document.getElementById(n).classList.add("active");
+
+  if(name==="home")renderHome();
+  if(name==="tournaments"){filterTours(activeFilter)}
+  if(name==="joined")renderJoined();
+  if(name==="results")renderResults();
+  if(name==="leaderboard")renderLeaderboard();
+  if(name==="notifications")renderNotifications();
+  if(name==="wallet")renderWallet();
+  if(name==="profile")renderProfile();
+  if(name==="editProfile")renderProfile();
+  if(name==="support")renderSupport();
+}
+
+/* =========================
+   HOME + TOURNAMENTS
+   ========================= */
+function statusClass(s){return s==="Live"?"live":s==="Completed"?"done":"up"}
+function tourCard(t){
+  const dt=new Date(t.time).toLocaleString();
+  const remaining=Math.max(0,(t.slots||0)-(t.filled||0));
+  return `
+  <div class="card tourCard glow" onclick="openTournament(${t.id})">
+    <div class="tourTop">
+      <div class="tourIcon">💎</div>
+      <div class="tourInfo">
+        <b>${esc(t.title)} <span class="badge ${statusClass(t.status)}">${esc(t.status).toUpperCase()}</span></b>
+        <p>📅 ${esc(dt)}</p>
+        <p>🎮 ${esc(t.mode||"BR")} • ₹${esc(t.entry)} Entry • ₹${esc(t.prize)} Prize</p>
+      </div>
+      <b class="cyan">›</b>
+    </div>
+    <div class="statline">
+      <div class="stat"><small>ENTRY</small><b>₹${esc(t.entry)}</b></div>
+      <div class="stat"><small>PRIZE</small><b>₹${esc(t.prize)}</b></div>
+      <div class="stat"><small>SLOTS</small><b>${esc(t.slots)}</b></div>
+      <div class="stat"><small>LEFT</small><b>${remaining}</b></div><div class="stat"><small>PER KILL</small><b>₹${esc(t.perKill||0)}</b></div>
+    </div>
+  </div>`;
+}
+function renderHome(){
+  const tours=getTours();
+  document.getElementById("homeTours").innerHTML=tours.filter(x=>x.status==="Live"||x.status==="Upcoming").slice(0,4).map(tourCard).join("")||'<div class="empty">No tournaments available.</div>';
+  const latest=(getJSON("nv_firestore_notices",null)||getJSON("nv_notices",[])).slice(0,1)[0];
+  document.getElementById("homeAnnouncement").innerHTML=latest?
+    `<b class="cyan">📢 ${esc(latest.title)}</b><p class="muted" style="margin-top:5px">${esc(latest.msg)}</p>`:
+    `<b class="cyan">💎 NV - ESPORTS ANNOUNCEMENT</b><p class="muted" style="margin-top:5px">New tournaments and results will appear here.</p>`;
+}
+function filterTours(filter){
+  activeFilter=filter;
+  ["Live","Upcoming","Completed","All"].forEach(x=>{
+    const id="tab"+x;const el=document.getElementById(id);if(el)el.classList.toggle("active",filter===x);
+  });
+  const tours=getTours().filter(t=>filter==="All"||t.status===filter);
+  document.getElementById("tourList").innerHTML=tours.map(tourCard).join("")||'<div class="empty">No tournaments in this category.</div>';
+}
+async function openTournament(id){
+  lastDetailId=id;const t=getTours().find(x=>x.id===id);if(!t)return;
+  const joined=getJSON("nv_joined",[]).some(x=>String(x.tourId)===String(id)&&(x.userId===currentUser?.id||x.user===currentUser?.username));
+  let roomData=joined?await getProtectedRoom(id):null;
+  if(joined&&(!roomData||!roomData.room||!roomData.pass)){const jr=getJSON("nv_joined",[]).find(x=>String(x.tourId)===String(id)&&(x.userId===currentUser?.id||x.user===currentUser?.username));if(jr&&(jr.room||jr.pass))roomData={room:jr.room||"",pass:jr.pass||""};}
+  const roomVisible=joined&&roomData&&String(roomData.room||"").trim()&&String(roomData.pass||"").trim();
+  let action="";
+  if(t.status==="Completed")action=`<div class="roomBox"><b class="red">TOURNAMENT COMPLETED</b></div>`;
+  else if(joined){
+    action=roomVisible?
+      `<div class="roomBox"><div class="muted">ROOM ID</div><b>${esc(roomData.room)}</b><div class="muted" style="margin-top:5px">PASSWORD</div><b>${esc(roomData.pass)}</b></div>`:
+      `<div class="roomBox"><b>ROOM: BLANK</b><p class="muted">Room ID & Password are available only to joined players.</p></div>`;
+  }else{
+    action=`<button class="btn" onclick="joinTournament(${t.id})">JOIN ₹${esc(t.entry)}</button>`;
+  }
+  document.getElementById("detailContent").innerHTML=`
+    <div class="detailHero">
+      <div class="detailArt">💎</div>
+      <div class="detailBody">
+        <h2>${esc(t.title)} <span class="badge ${statusClass(t.status)}">${esc(t.status).toUpperCase()}</span></h2>
+        <p class="muted" style="margin-top:4px">📅 ${esc(new Date(t.time).toLocaleString())}</p>
+        <div class="infoGrid" style="margin-top:9px">
+          <div class="infoBox"><small>ENTRY FEE</small><b>₹${esc(t.entry)}</b></div>
+          <div class="infoBox"><small>PRIZE POOL</small><b>₹${esc(t.prize)}</b></div>
+          <div class="infoBox"><small>MODE</small><b>${esc(t.mode)}</b></div>
+          <div class="infoBox"><small>SLOTS</small><b>${esc(t.filled||0)} / ${esc(t.slots)}</b></div><div class="infoBox"><small>PER KILL</small><b>₹${esc(t.perKill||0)}</b></div>
+        </div>
+        <div class="card" style="margin:8px 0 0;padding:8px">
+          <b class="cyan">Your Status</b><p class="muted" style="margin-top:4px">${joined?"✓ Joined":"Not Joined"}</p>
+        </div>
+        ${action}
+        <div class="card" style="margin:8px 0 0">
+          <b class="cyan">📜 Rules & Details</b>
+          <p class="muted" style="margin-top:5px;line-height:1.6">${esc(t.rules||"Fair play only.")}</p>
+          <p class="muted" style="margin-top:5px">${esc(t.details||"Premium tournament")}</p>
+        </div>
+      </div>
+    </div>`;
+  showPage("detail");
+  if(joined){
+    getProtectedRoom(id).then(room=>{
+      const box=document.getElementById("detailRoomBox");
+      if(!box)return;
+      if(room&&String(room.room||"").trim()&&String(room.pass||"").trim()){
+        box.innerHTML=`<div class="muted">ROOM ID</div><b>${esc(room.room)}</b><div class="muted" style="margin-top:5px">PASSWORD</div><b>${esc(room.pass)}</b><p class="muted" style="margin-top:5px">🔐 Visible only because you joined this tournament.</p>`;
+      }
+    });
+  }
+}
+function joinTournament(id){
+  const t=getTours().find(x=>x.id===id);if(!t||!currentUser)return;
+  if(t.status==="Completed"){toast("Tournament completed.");return}
+  const joined=getJSON("nv_joined",[]);
+  if(joined.some(x=>x.tourId===id&&x.user===currentUser.username)){toast("Already joined.");return}
+  const b=parseInt(localStorage.getItem(balanceKey())||"0",10);
+  if(Number(t.entry)>b){
+    toast("Low balance. Wallet open ho raha hai.");
+    showPage("wallet");return;
+  }
+  if(Number(t.entry)>0)localStorage.setItem(balanceKey(),String(b-Number(t.entry)));
+  joined.push({id:uid(),tourId:id,user:currentUser.username,time:new Date().toLocaleString(),entry:t.entry});
+  setJSON("nv_joined",joined);
+  t.filled=Math.min(Number(t.slots||999999),Number(t.filled||0)+1);
+  setJSON("nv_tours_final",getTours().map(x=>x.id===id?t:x));
+  toast("Joined successfully 💎");
+  openTournament(id);refreshHeader();
+}
+
+/* =========================
+   JOINED / RESULTS / LEADERBOARD
+   ========================= */
+function renderJoined(){
+  const arr=getJSON("nv_joined",[]).filter(x=>x.user===currentUser.username).reverse();
+  document.getElementById("joinedList").innerHTML=arr.map(j=>{
+    const t=getTours().find(x=>x.id===j.tourId);if(!t)return"";
+    const room=false;
+    return `<div class="card glow"><div class="tourTop"><div class="tourIcon">🏆</div><div class="tourInfo"><b>${esc(t.title)}</b><p>₹${esc(t.entry)} | ₹${esc(t.prize)} Prize</p><p>Joined: ${esc(j.time)}</p></div><span class="badge ${statusClass(t.status)}">${esc(t.status)}</span></div>
+      ${room?`<div class="roomBox">ROOM: <b>${esc(t.room||"123456")}</b> &nbsp; PASS: <b>${esc(t.pass||"NV103")}</b></div>`:`<div class="roomBox"><b>ROOM: BLANK</b><p class="muted">Admin has not entered Room ID & Password yet.</p></div>`}</div>`;
+  }).join("")||'<div class="empty">No joined matches.</div>';
+}
+function renderResults(){
+  const arr=getJSON("nv_results",[]);
+  const mine=arr.filter(x=>x.user===currentUser.username);
+  const joined=getJSON("nv_joined",[]).filter(x=>x.user===currentUser.username);
+  const list=mine.length?mine:joined.map((j,i)=>({title:"Match #"+j.tourId,status:"Joined",time:j.time,prize:"—"}));
+  document.getElementById("resultsList").innerHTML=list.reverse().map(r=>`
+    <div class="card glow"><div class="row"><div class="tourIcon">🏆</div><div><b>${esc(r.title||"Match Result")}</b><p class="muted">${esc(r.time||"")}</p><p class="${r.status==="Won"?"green":"cyan"}">${esc(r.status||"Joined")} ${r.prize&&r.prize!=="—"?"• ₹"+esc(r.prize):""}</p></div></div></div>
+  `).join("")||'<div class="empty">No results yet.</div>';
+}
+function renderLeaderboard(){
+  const a=getJSON("nv_leaderboard",[
+    {rank:1,name:"Killer_OP",points:500},
+    {rank:2,name:"BlackDiamond",points:450},
+    {rank:3,name:"RDX_Gamer",points:420},
+    {rank:4,name:"NitinFF",points:380},
+    {rank:5,name:"Legend_07",points:350}
+  ]);
+  document.getElementById("leaderboardList").innerHTML=a.map(x=>`
+    <div class="card ${x.rank<=3?"glow":""}"><div class="row"><div class="tourIcon">${x.rank<=3?"🏆":"♟️"}</div><div class="tourInfo"><b>#${esc(x.rank)} ${esc(x.name)}</b><p>Season Points</p></div><b class="cyan">${esc(x.points)} pts</b></div></div>
+  `).join("");
+}
+
+/* =========================
+   NOTIFICATIONS
+   ========================= */
+function renderNotifications(){
+  const a=getJSON("nv_firestore_notices",getJSON("nv_notices",[
+    {id:1,title:"Big Tournament",msg:"BR SOLO #103 is live!",time:"2 min ago"},
+    {id:2,title:"Deposit Update",msg:"Your deposit is under review.",time:"15 min ago"},
+    {id:3,title:"Result Announced",msg:"Match result declared.",time:"1 hr ago"},
+    {id:4,title:"Maintenance",msg:"Server maintenance tonight.",time:"3 hr ago"},
+    {id:5,title:"Welcome",msg:"Welcome to NV - Esports.",time:"1 day ago"}
+  ]));
+  document.getElementById("notificationList").innerHTML=a.slice().reverse().map(n=>`
+    <div class="card glow"><b class="cyan">🔔 ${esc(n.title)}</b><p class="muted" style="margin-top:5px">${esc(n.msg)}</p><p class="muted" style="margin-top:4px">${esc(n.time||"")}</p></div>
+  `).join("");
+}
+
+/* =========================
+   WALLET
+   ========================= */
+function refreshHeader(){
+  const b=localStorage.getItem(balanceKey())||"0";
+  document.getElementById("headerBalance").textContent="Rs"+b;
+}
+function updateQR(){
+  UPI=localStorage.getItem("nv_upi")||DEFAULT_UPI;
+  document.getElementById("upiText").textContent=UPI;
+  document.getElementById("qrImg").src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data="+encodeURIComponent("upi://pay?pa="+UPI);
+}
+function setAmount(v){document.getElementById("depositAmount").value=v}
+function copyUPI(){
+  navigator.clipboard?.writeText(UPI).then(()=>toast("UPI copied: "+UPI)).catch(()=>toast(UPI));
+}
+function walletHistory(){
+  const a=getJSON("nv_transactions",[]).filter(x=>x.user===currentUser.username).reverse();
+  document.getElementById("walletHistory").innerHTML=a.map(x=>{
+    const c=x.status==="Pending"?"#ffd23f":x.status==="Approved"?"#36ffb1":"#ff4265";
+    return `<div class="card" style="border-left:3px solid ${c}"><b>${esc(x.type)} ₹${esc(x.amount)}</b> <span style="color:${c}">[${esc(x.status)}]</span><p class="muted">${esc(x.time)} ${x.utr?"• UTR "+esc(x.utr):""}</p></div>`;
+  }).join("")||'<div class="empty">No transactions.</div>';
+}
+function renderWallet(){
+  const b=localStorage.getItem(balanceKey())||"0";
+  document.getElementById("walletBalance").textContent="Rs"+b;
+  refreshHeader();updateQR();walletHistory();
+}
+function depositRequest(){
+  const amount=Number(document.getElementById("depositAmount").value);
+  const utr=document.getElementById("depositUTR").value.trim();
+  if(!amount||amount<1||!utr){toast("Amount aur UTR bharo.");return}
+  const a=getJSON("nv_transactions",[]);
+  a.push({id:uid(),type:"Deposit",amount,utr,user:currentUser.username,status:"Pending",time:new Date().toLocaleString()});
+  setJSON("nv_transactions",a);
+  document.getElementById("depositAmount").value="";document.getElementById("depositUTR").value="";
+  walletHistory();toast("Deposit request pending. Admin verification required.");
+}
+function withdrawRequest(){
+  const amount=Number(document.getElementById("withdrawAmount").value);
+  const upi=document.getElementById("withdrawUPI").value.trim();
+  const b=Number(localStorage.getItem(balanceKey())||0);
+  if(!amount||!upi){toast("Amount aur UPI bharo.");return}
+  if(amount<100){toast("Minimum withdrawal ₹100.");return}
+  if(amount>b){toast("Low balance.");return}
+  const a=getJSON("nv_transactions",[]);
+  a.push({id:uid(),type:"Withdraw",amount,upi,user:currentUser.username,status:"Pending",time:new Date().toLocaleString()});
+  setJSON("nv_transactions",a);
+  document.getElementById("withdrawAmount").value="";document.getElementById("withdrawUPI").value="";
+  walletHistory();toast("Withdrawal request pending.");
+}
+
+/* =========================
+   SUPPORT
+   ========================= */
+function sendSupport(){
+  const sub=document.getElementById("supportSubject").value.trim();
+  const msg=document.getElementById("supportMessage").value.trim();
+  if(!sub||!msg){toast("Subject aur message bharo.");return}
+  const a=getJSON("nv_support",[]);
+  a.push({id:uid(),sub,msg,user:currentUser.username,time:new Date().toLocaleString(),status:"Open"});
+  setJSON("nv_support",a);
+  document.getElementById("supportSubject").value="";document.getElementById("supportMessage").value="";
+  renderSupport();toast("Support ticket sent.");
+}
+function renderSupport(){
+  const a=getJSON("nv_support",[]).filter(x=>x.user===currentUser.username).reverse();
+  document.getElementById("supportList").innerHTML=a.map(x=>`
+    <div class="card"><b>${esc(x.sub)}</b><p class="muted" style="margin-top:4px">${esc(x.msg)}</p><p class="cyan" style="font-size:9px;margin-top:4px">${esc(x.status||"Open")} • ${esc(x.time)}</p></div>
+  `).join("")||'<div class="empty">No tickets.</div>';
+}
+
+/* =========================
+   REFRESH
+   ========================= */
+function refreshAll(){
+  if(!currentUser)return;
+  refreshHeader();renderHome();filterTours(activeFilter);renderJoined();renderResults();renderLeaderboard();renderNotifications();renderWallet();renderProfile();renderSupport();
+}
+setInterval(()=>{
+  if(currentUser){
+    refreshHeader();
+    const tours=getTours();setJSON("nv_tours_final",tours);
+    if(!pageEl("home").classList.contains("hidden"))renderHome();
+  }
+},5000);
+
+/* =========================
+   STARTUP
+   ========================= */
+(function(){
+  const c=getJSON("nv_current",null);
+  if(c){
+    currentUser=c;
+    document.getElementById("loginPage").classList.add("hidden");
+    if(!c.mobile||!c.uid){
+      document.getElementById("setupPage").classList.remove("hidden");
+      document.getElementById("pU").value=c.username||"";
+      document.getElementById("pF").value=c.fullName||"";
+      document.getElementById("pI").value=c.uid||"";
+      document.getElementById("pG").value=c.ign||"";
+      document.getElementById("pM").value=c.mobile||"";
+    }else showMain();
+  }
+})();
+
+/* NV FINAL CLOUD OVERRIDES — Firestore-backed users, wallet, joins, results, notices, support */
+let cloudUnsubs=[];
+function cloudUserRef(){return currentUser&&db?db.collection("users").doc(currentUser.id):null}
+function cloudUserName(){return currentUser?.username||currentUser?.id||"guest"}
+function cloudNow(){return firebase.firestore.FieldValue.serverTimestamp()}
+async function cloudLoadUser(){
+ if(!db||!currentUser)return;
+ const ref=cloudUserRef(); const snap=await ref.get();
+ if(snap.exists){currentUser=Object.assign({},currentUser,snap.data());setJSON("nv_current",currentUser)}
+ else await ref.set(Object.assign({},currentUser,{balance:0,createdAt:cloudNow(),updatedAt:cloudNow()}),{merge:true});
+}
+function startCloudUserSync(){
+ if(!db||!currentUser)return;
+ cloudUnsubs.forEach(f=>f&&f());cloudUnsubs=[];
+ cloudUnsubs.push(db.collection("transactions").where("userId","==",currentUser.id).onSnapshot(s=>{setJSON("nv_transactions",s.docs.map(d=>Object.assign({id:d.id},d.data())));renderWallet()}));
+ cloudUnsubs.push(db.collection("joined").where("userId","==",currentUser.id).onSnapshot(s=>{setJSON("nv_joined",s.docs.map(d=>Object.assign({id:d.id},d.data())));renderJoined()}));
+ cloudUnsubs.push(db.collection("results").where("userId","==",currentUser.id).onSnapshot(s=>{setJSON("nv_results",s.docs.map(d=>Object.assign({id:d.id},d.data())));renderResults()}));
+ cloudUnsubs.push(db.collection("support").where("userId","==",currentUser.id).onSnapshot(s=>{setJSON("nv_support",s.docs.map(d=>Object.assign({id:d.id},d.data())));renderSupport()}));
+ cloudUnsubs.push(cloudUserRef().onSnapshot(s=>{if(s.exists){currentUser=Object.assign({},currentUser,s.data());setJSON("nv_current",currentUser);refreshHeader();renderProfile();renderWallet()}}));
+}
+async function syncUserToFirestore(){if(!db||!currentUser)return;await cloudUserRef().set(Object.assign({},currentUser,{updatedAt:cloudNow()}),{merge:true})}
+
+/* replace profile persistence */
+saveProfile=async function(){
+ const c=getJSON("nv_current",null);if(!c)return;
+ c.username=document.getElementById("pU").value.trim().toLowerCase();c.fullName=document.getElementById("pF").value.trim();c.uid=document.getElementById("pI").value.trim();c.ign=document.getElementById("pG").value.trim();c.mobile=document.getElementById("pM").value.trim();
+ if(!c.username||!c.fullName||!c.uid||!c.ign||!c.mobile)return toast("Sabhi * fields bharo.");
+ currentUser=c;setJSON("nv_current",c);
+ try{await cloudUserRef().set(Object.assign({},c,{balance:Number(c.balance||0),updatedAt:cloudNow(),createdAt:cloudNow()}),{merge:true});startCloudUserSync();showMain();toast("Profile saved online 💎")}catch(e){toast("Profile save failed: "+e.message)}
+};
+updateProfile=async function(){
+ if(!currentUser)return;const eF=document.getElementById("eF"),eI=document.getElementById("eI"),eG=document.getElementById("eG"),eM=document.getElementById("eM");
+ if(!eF.value.trim()||!eI.value.trim()||!eG.value.trim())return toast("Name, UID aur IGN bharo.");
+ currentUser.fullName=eF.value.trim();currentUser.uid=eI.value.trim();currentUser.ign=eG.value.trim();currentUser.mobile=eM.value.trim();
+ try{await syncUserToFirestore();setJSON("nv_current",currentUser);renderProfile();toast("Profile updated online.")}catch(e){toast("Update failed: "+e.message)}
+};
+
+/* protected tournament room/password access */
+async function getProtectedRoom(tournamentId){
+  if(!db||!currentUser)return null;
+  try{
+    const snap=await db.collection("tournamentRooms").doc(String(tournamentId)).get();
+    if(!snap.exists)return null;
+    const d=snap.data()||{};
+    return {room:d.room||"",pass:d.pass||""};
+  }catch(e){return null}
+}
+
+/* cloud auth bootstrap */
+const _origGoogleLogin=googleLogin;
+googleLogin=function(){
+ if(!auth)return toast("Firebase could not initialize.");
+ const provider=new firebase.auth.GoogleAuthProvider();
+ auth.signInWithPopup(provider).then(async r=>{
+  const u=r.user; currentUser={id:u.uid,email:u.email||"",fullName:u.displayName||"Player",username:(u.displayName||"player").replace(/\s+/g,"_").toLowerCase(),mobile:"",uid:"",ign:u.displayName||"Player"};
+  try{const snap=await db.collection("users").doc(u.uid).get();if(snap.exists)currentUser=Object.assign(currentUser,snap.data());else await db.collection("users").doc(u.uid).set(Object.assign({},currentUser,{balance:0,createdAt:cloudNow(),updatedAt:cloudNow()}));setJSON("nv_current",currentUser);afterAuth();startCloudUserSync()}catch(e){toast("User sync failed: "+e.message)}
+ }).catch(e=>toast("Google login failed: "+e.message));
+};
+
+/* cloud balance */
+refreshHeader=function(){const b=Number(currentUser?.balance||0);document.getElementById("headerBalance").textContent="Rs"+b};
+renderWallet=function(){const b=Number(currentUser?.balance||0);document.getElementById("walletBalance").textContent="Rs"+b;refreshHeader();updateQR();walletHistory()};
+walletHistory=function(){const a=getJSON("nv_transactions",[]).filter(x=>x.userId===currentUser?.id||x.user===currentUser?.username).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));document.getElementById("walletHistory").innerHTML=a.map(x=>{const c=x.status==="Pending"?"#ffd23f":x.status==="Approved"?"#36ffb1":"#ff4265";return `<div class="card" style="border-left:3px solid ${c}"><b>${esc(x.type)} ₹${esc(x.amount)}</b> <span style="color:${c}">[${esc(x.status)}]</span><p class="muted">${esc(x.time||"")} ${x.utr?"• UTR "+esc(x.utr):""}</p></div>`}).join("")||'<div class="empty">No transactions.</div>'};
+
+depositRequest=async function(){
+  const amount=Number(document.getElementById("depositAmount").value);
+  const utr=document.getElementById("depositUTR").value.trim();
+  if(!amount||amount<1)return toast("Amount bharo.");
+  if(!utr)return toast("UTR Number bharo.");
+  try{
+    await db.collection("transactions").add({
+      userId:currentUser.id,user:currentUser.username,type:"Deposit",amount,utr,
+      status:"Pending",createdAt:cloudNow(),time:new Date().toLocaleString()
+    });
+    document.getElementById("depositAmount").value="";
+    document.getElementById("depositUTR").value="";
+    toast("Deposit request sent to admin.");
+  }catch(e){toast("Deposit failed: "+e.message)}
+};
+withdrawRequest=withdrawRequest=async function(){const amount=Number(document.getElementById("withdrawAmount").value);const upi=document.getElementById("withdrawUPI").value.trim();const b=Number(currentUser?.balance||0);if(!amount||!upi)return toast("Amount aur UPI bharo.");if(amount<100)return toast("Minimum withdrawal ₹100.");if(amount>b)return toast("Low balance.");try{await db.collection("transactions").add({userId:currentUser.id,user:currentUser.username,type:"Withdraw",amount,upi,status:"Pending",createdAt:cloudNow(),time:new Date().toLocaleString()});document.getElementById("withdrawAmount").value="";document.getElementById("withdrawUPI").value="";toast("Withdrawal request sent to admin.")}catch(e){toast("Withdrawal failed: "+e.message)}};
+
+joinTournament=async function(id){const t=getTours().find(x=>String(x.id)===String(id));if(!t||!currentUser)return;if(t.status!=="Upcoming"&&t.status!=="Live")return toast("Tournament not open.");try{const tourRef=db.collection("tournaments").doc(String(id));const joinRef=db.collection("joined").doc(currentUser.id+"_"+String(id));await db.runTransaction(async tx=>{const ts=await tx.get(tourRef);const us=await tx.get(cloudUserRef());const js=await tx.get(joinRef);if(js.exists)throw new Error("Already joined.");if(!ts.exists)throw new Error("Tournament not found.");const td=ts.data(),ud=us.data()||{};const balance=Number(ud.balance||0),entry=Number(td.entry||0),filled=Number(td.filled||0),slots=Number(td.slots||0);if(slots&&filled>=slots)throw new Error("Slots full.");if(balance<entry)throw new Error("Low balance.");tx.update(cloudUserRef(),{balance:balance-entry,joinTournamentId:String(id),updatedAt:cloudNow()});tx.update(tourRef,{filled:filled+1,updatedAt:cloudNow()});tx.set(joinRef,{userId:currentUser.id,user:currentUser.username,tourId:String(id),entry,time:new Date().toLocaleString(),createdAt:cloudNow()})});toast("Joined successfully 💎");openTournament(id)}catch(e){toast(e.message)}};
+
+renderJoined=async function(){const arr=getJSON("nv_joined",[]).filter(x=>x.userId===currentUser?.id||x.user===currentUser?.username).reverse();const cards=await Promise.all(arr.map(async j=>{const t=getTours().find(x=>String(x.id)===String(j.tourId));if(!t)return"";let room=await getProtectedRoom(t.id);if(!room||!room.room||!room.pass){if(j.room||j.pass)room={room:j.room||"",pass:j.pass||""}}const hasRoom=room&&String(room.room||"").trim()&&String(room.pass||"").trim();return `<div class="card glow"><div class="tourTop"><div class="tourIcon">🏆</div><div class="tourInfo"><b>${esc(t.title)}</b><p>₹${esc(t.entry)} | ₹${esc(t.prize)} Prize</p><p>Per Kill: ₹${esc(t.perKill||0)}</p><p>Joined: ${esc(j.time||"")}</p></div><span class="badge ${statusClass(t.status)}">${esc(t.status)}</span></div>${hasRoom?`<div class="roomBox">ROOM: <b>${esc(room.room)}</b> &nbsp; PASS: <b>${esc(room.pass)}</b><p class="muted" style="margin-top:5px">🔐 Visible only because you joined this tournament.</p></div>`:`<div class="roomBox"><b>ROOM: HIDDEN</b><p class="muted">Admin has not entered Room ID & Password yet.</p></div>`}</div>`}));document.getElementById("joinedList").innerHTML=cards.join("")||'<div class="empty">No joined matches.</div>'}
+renderResults=renderResults=function(){const arr=getJSON("nv_results",[]).filter(x=>x.userId===currentUser?.id||x.user===currentUser?.username).reverse();document.getElementById("resultsList").innerHTML=arr.map(r=>`<div class="card glow"><div class="row"><div class="tourIcon">🏆</div><div><b>${esc(r.title||"Match Result")}</b><p class="muted">${esc(r.time||"")}</p><p class="cyan">${esc(r.status||"")} ${r.prize?"• ₹"+esc(r.prize):""}</p></div></div></div>`).join("")||'<div class="empty">No results yet.</div>'};
+renderNotifications=function(){const a=getJSON("nv_firestore_notices",[]);document.getElementById("notificationList").innerHTML=a.map(n=>`<div class="card glow"><b class="cyan">🔔 ${esc(n.title)}</b><p class="muted" style="margin-top:5px">${esc(n.msg)}</p></div>`).join("")||'<div class="empty">No notifications.</div>'};
+sendSupport=async function(){const sub=document.getElementById("supportSubject").value.trim(),msg=document.getElementById("supportMessage").value.trim();if(!sub||!msg)return toast("Subject aur message bharo.");try{await db.collection("support").add({userId:currentUser.id,user:currentUser.username,sub,msg,status:"Open",createdAt:cloudNow(),time:new Date().toLocaleString()});document.getElementById("supportSubject").value="";document.getElementById("supportMessage").value="";toast("Support ticket sent.")}catch(e){toast("Support failed: "+e.message)}};
+renderSupport=function(){const a=getJSON("nv_support",[]).filter(x=>x.userId===currentUser?.id||x.user===currentUser?.username).reverse();document.getElementById("supportList").innerHTML=a.map(x=>`<div class="card"><b>${esc(x.sub)}</b><p class="muted" style="margin-top:4px">${esc(x.msg)}</p><p class="cyan" style="font-size:9px;margin-top:4px">${esc(x.status||"Open")}</p></div>`).join("")||'<div class="empty">No tickets.</div>'};
+
+/* restart user cloud sync after normal startup */
+setTimeout(()=>{if(currentUser&&db){cloudLoadUser().then(startCloudUserSync).catch(()=>{})}},800);
+</script>
+
+<script>
+let nvInstallPrompt=null;
+window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();nvInstallPrompt=e;});
+async function installNVApp(){
+  if(nvInstallPrompt){nvInstallPrompt.prompt();await nvInstallPrompt.userChoice;nvInstallPrompt=null;return;}
+  const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  toast(isIOS?"Safari Share menu > Add to Home Screen use karo.":"Chrome menu (⋮) kholo aur Install app / Add to Home screen chuno.");
+}
+</script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("/service-worker.js").catch(e=>console.warn("Service worker registration failed",e)));}</script>
+</body>
+</html>
+
