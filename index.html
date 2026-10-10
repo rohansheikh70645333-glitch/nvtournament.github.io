@@ -14,6 +14,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 
 <style>
 :root{
@@ -255,7 +256,6 @@ button:disabled{opacity:.45;cursor:not-allowed}
       <div class="authFeature">⚡ FAST SUPPORT</div>
     </div>
     <button id="googleLoginBtn" type="button" class="btn" onclick="googleLogin()">🔵 GOOGLE LOGIN</button>
-    <button type="button" class="btn2" style="width:100%;margin-top:7px" onclick="installNVApp()">📲 INSTALL NV ESPORTS APP</button>
     <p class="muted" style="margin-top:8px">Firebase Secured • NV - Esports</p>
   </div>
 </section>
@@ -285,7 +285,6 @@ button:disabled{opacity:.45;cursor:not-allowed}
     <div class="brand">💎 NV <span class="muted">Esports</span></div>
     <div class="row" style="flex:none">
       <span id="headerBalance" class="balance">Rs0</span>
-      <button class="iconBtn" onclick="installNVApp()" title="Install app">📲</button>
       <button class="iconBtn" onclick="showPage('notifications')">🔔</button>
     </div>
   </header>
@@ -311,6 +310,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
           <button class="card glow" onclick="showPage('wallet')" style="color:#fff">💰<br><small>WALLET</small></button>
           <button class="card glow" onclick="showPage('leaderboard')" style="color:#fff">📊<br><small>LEADERBOARD</small></button>
         </div>
+        <button id="installAppBtn" class="btn" type="button" onclick="installNVApp()" style="margin:10px 0">📲 INSTALL NV ESPORTS APP</button>
 
         <div class="sectionHead"><b>🔥 Live Tournaments</b><span onclick="showPage('tournaments')">View All ›</span></div>
         <div id="homeTours" class="tourList"></div>
@@ -1178,11 +1178,11 @@ setTimeout(()=>{if(currentUser&&db){cloudLoadUser().then(startCloudUserSync).cat
 
 <script>
 let nvInstallPrompt=null;
-window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();nvInstallPrompt=e;});
-async function installNVApp(){
-  if(nvInstallPrompt){nvInstallPrompt.prompt();await nvInstallPrompt.userChoice;nvInstallPrompt=null;return;}
-  const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
-  toast(isIOS?"Safari Share menu > Add to Home Screen use karo.":"Chrome menu (⋮) kholo aur Install app / Add to Home screen chuno.");
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();nvInstallPrompt=e;const b=document.getElementById('installAppBtn');if(b)b.style.display='block'});
+window.addEventListener('appinstalled',()=>{nvInstallPrompt=null;const b=document.getElementById('installAppBtn');if(b)b.textContent='✅ APP INSTALLED'});
+function installNVApp(){
+ if(nvInstallPrompt){nvInstallPrompt.prompt();nvInstallPrompt.userChoice.then(()=>{nvInstallPrompt=null});return;}
+ toast('Chrome menu (⋮) kholo, phir Install app ya Add to Home screen chuno.');
 }
 </script>
 <script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("/service-worker.js").catch(e=>console.warn("Service worker registration failed",e)));}</script>
